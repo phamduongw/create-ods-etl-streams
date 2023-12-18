@@ -44,25 +44,36 @@ def get_stream_flow(ods_stream):
     return stream_flow
 
 
-def main():
-    streams_need_to_create = []
+def print_to_console(stream_name, statement):
+    print("-- {}".format(stream_name))
+    print(statement)
+    print("\n")
 
+
+def get_statement_of_stream(is_exist, stream_name):
+    if is_exist:
+        for stream_info in ALL_STREAMS_AND_TOPICS:
+            if stream_info["name"] == stream_name:
+                print_to_console(stream_name, stream_info["statement"])
+    else:
+        print_to_console(stream_name, "ERROR!")
+
+
+def main():
     for ods_stream in ODS_STREAMS:
-        for stream_name in get_stream_flow(ods_stream)[::-1]:
+        stream_flow = get_stream_flow(ods_stream)[::-1]
+        for stream_name in stream_flow:
+            if len(stream_flow) == 1:
+                get_statement_of_stream(False, stream_name)
+                break
+
             if "ETL" in stream_name:
-                streams_need_to_create.append(stream_name)
+                get_statement_of_stream(True, stream_name)
                 break
 
             if "ODS" in stream_name:
-                streams_need_to_create.append(stream_name)
+                get_statement_of_stream(True, stream_name)
                 break
-
-    for stream_info in ALL_STREAMS_AND_TOPICS:
-        for stream_need_to_create in streams_need_to_create:
-            if stream_need_to_create == stream_info["name"]:
-                print("-- {}".format(stream_need_to_create))
-                print(stream_info["statement"])
-                print("\n")
 
 
 ALL_STREAMS_AND_TOPICS = get_all_streams_and_topics()
