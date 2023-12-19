@@ -1,8 +1,4 @@
-import os
 from ksqldb_services import list_streams_extended
-
-if os.path.exists("create-ods-etl-streams.sql"):
-    os.remove("create-ods-etl-streams.sql")
 
 with open("ods_streams.txt", "r") as file:
     ODS_STREAMS = file.read().split("\n")
@@ -24,7 +20,6 @@ def get_all_streams_and_topics():
             {
                 "name": source_description["name"],
                 "sinks": sinks,
-                "topic": source_description["topic"],
                 "statement": source_description["statement"],
             }
         )
@@ -49,8 +44,7 @@ def get_stream_flow(ods_stream):
 
 
 def print_to_console(stream_name, statement):
-    with open("create-ods-etl-streams.sql", "a") as file:
-        file.write("-- {}\n{}\n\n".format(stream_name, statement))
+    print("-- {}\n{}\n\n".format(stream_name, statement))
 
 
 def get_statement_of_stream(is_exist, stream_name):
@@ -64,19 +58,20 @@ def get_statement_of_stream(is_exist, stream_name):
 
 def main():
     for ods_stream in ODS_STREAMS:
-        stream_flow = get_stream_flow(ods_stream.strip())[::-1]
-        for stream_name in stream_flow:
-            if len(stream_flow) == 1:
-                get_statement_of_stream(False, stream_name)
-                break
+        if ods_stream:
+            stream_flow = get_stream_flow(ods_stream.strip())[::-1]
+            for stream_name in stream_flow:
+                if len(stream_flow) == 1:
+                    get_statement_of_stream(False, stream_name)
+                    break
 
-            if "ETL" in stream_name:
-                get_statement_of_stream(True, stream_name)
-                break
+                if "ETL" in stream_name:
+                    get_statement_of_stream(True, stream_name)
+                    break
 
-            if "ODS" in stream_name:
-                get_statement_of_stream(True, stream_name)
-                break
+                if "ODS" in stream_name:
+                    get_statement_of_stream(True, stream_name)
+                    break
 
 
 ALL_STREAMS_AND_TOPICS = get_all_streams_and_topics()
